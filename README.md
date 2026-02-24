@@ -1,3 +1,8 @@
+> [!NOTE]
+> This mod will not be updated to 2.208. I give full permission for any future forks to be uploaded to the Geode mod index.
+> 
+> I will still try to maintain nlw-api to the best of my ability.
+
 # NLWIntegration
 
 Uses the [Non-Listworthy Extreme Demons spreadsheet](https://docs.google.com/spreadsheets/d/1YxUE2kkvhT2E6AjnkvTf-o8iu_shSLbuFkEFcZOvieA/edit#gid=190861115)
