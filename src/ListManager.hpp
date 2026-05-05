@@ -1,4 +1,4 @@
-#include "NLWRating.h"
+#include "NLWRating.hpp"
 #include <Geode/utils/web.hpp>
 
 class ListManager {

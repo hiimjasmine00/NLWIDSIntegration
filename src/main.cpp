@@ -1,4 +1,4 @@
-#include "ListManager.h"
+#include "ListManager.hpp"
 #include <Geode/modify/MenuLayer.hpp>
 
 using namespace geode::prelude;

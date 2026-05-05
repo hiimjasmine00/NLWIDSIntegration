@@ -1,5 +1,5 @@
-#include "ListManager.h"
-#include "NLWInfoPopupLayer.h"
+#include "ListManager.hpp"
+#include "NLWInfoPopupLayer.hpp"
 #include <Geode/binding/GJDifficultySprite.hpp>
 #include <Geode/binding/GJGameLevel.hpp>
 #include <Geode/modify/LevelInfoLayer.hpp>
@@ -29,11 +29,10 @@ class $modify(NLWInfoLayer, LevelInfoLayer) {
     }
 
     void updateDifficultyFace() {
-        if (!ListManager::fetchedRatings || ListManager::erroredRatings) return;
-        if (m_level->m_stars != 10) return;
-        if (m_level->m_demonDifficulty != 6) return;
-
-        if (!m_fields->m_menu) return;
+        if (
+            !ListManager::fetchedRatings || ListManager::erroredRatings ||
+            m_level->m_stars != 10 || m_level->m_demonDifficulty != 6 || !m_fields->m_menu
+        ) return;
 
         auto ratingOpt = ListManager::getRating(m_level);
         if (!ratingOpt) {
@@ -51,11 +50,11 @@ class $modify(NLWInfoLayer, LevelInfoLayer) {
             m_fields->m_menu->removeAllChildren();
             m_fields->m_menu->setPosition(m_difficultySprite->getPosition());
 
-            auto sprite = GJDifficultySprite::create(m_level->m_demonDifficulty + 4, GJDifficultyName::Long);
+            auto sprite = GJDifficultySprite::create(10, GJDifficultyName::Long);
             auto button = CCMenuItemSpriteExtra::create(sprite, this, menu_selector(NLWInfoLayer::openNLWInfoPane));
             m_fields->m_menu->addChild(button);
 
-            m_difficultySprite->setVisible(false);
+            m_difficultySprite->setOpacity(0);
         }
         else {
             if (m_fields->m_addedTier) return;

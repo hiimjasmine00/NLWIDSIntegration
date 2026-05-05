@@ -1,4 +1,4 @@
-#include "ListManager.h"
+#include "ListManager.hpp"
 #include <Geode/binding/FLAlertLayer.hpp>
 #include <Geode/binding/GJGameLevel.hpp>
 #include <Geode/binding/GJSearchObject.hpp>
@@ -21,8 +21,7 @@ void ListManager::parseResponse(const matjson::Value& data) {
     auto arr = data.asArray().unwrap();
 
     for (auto& level : arr) {
-        auto rating = NLWRating(level);
-        ListManager::ratings.push_back(rating);
+        ListManager::ratings.emplace_back(level);
     }
 }
 
@@ -31,7 +30,7 @@ std::string getPlatformName() {
     if (HMODULE hntdll = GetModuleHandle("ntdll.dll")) {
         using WineVersionFunc = char const* (CDECL *)(void);
         static WineVersionFunc getWineVersion = reinterpret_cast<WineVersionFunc>(GetProcAddress(hntdll, "wine_get_version"));
-        if (getWineVersion) retrn fmt::format(GEODE_PLATFORM_NAME " (Wine/{})", getWineVersion());
+        if (getWineVersion) return fmt::format(GEODE_PLATFORM_NAME " (Wine/{})", getWineVersion());
     }
     #endif
     return GEODE_PLATFORM_NAME;

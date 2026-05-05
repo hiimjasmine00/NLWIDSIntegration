@@ -9,9 +9,7 @@ enum class NLWRatingType {
 
 class NLWRating {
 public:
-    explicit NLWRating(const matjson::Value& levelData);
-
-    NLWRating() = default;
+    NLWRating(const matjson::Value& levelData);
 
     int sheetIndex;
     NLWRatingType type;

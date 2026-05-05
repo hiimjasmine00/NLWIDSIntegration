@@ -1,5 +1,5 @@
-#include "NLWInfoPopupLayer.h"
-#include "ListManager.h"
+#include "NLWInfoPopupLayer.hpp"
+#include "ListManager.hpp"
 #include "PlainTextArea.hpp"
 #include <Geode/binding/ButtonSprite.hpp>
 #include <Geode/binding/LevelBrowserLayer.hpp>

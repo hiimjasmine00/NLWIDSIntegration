@@ -1,4 +1,4 @@
-#include "NLWRating.h"
+#include "NLWRating.hpp"
 
 NLWRating::NLWRating(const matjson::Value& levelData) {
     sheetIndex = levelData["sheetIndex"].asInt().unwrapOrDefault();

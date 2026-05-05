@@ -1,4 +1,4 @@
-#include "NLWRating.h"
+#include "NLWRating.hpp"
 #include <Geode/ui/Popup.hpp>
 
 class NLWInfoPopupLayer : public geode::Popup {
