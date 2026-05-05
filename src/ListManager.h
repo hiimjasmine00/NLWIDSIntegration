@@ -1,30 +1,19 @@
-#ifndef LISTMANAGER_H
-#define LISTMANAGER_H
-
-#include "Geode/binding/GJGameLevel.hpp"
-#include <Geode/loader/Event.hpp>
-#include "Geode/binding/GJSearchObject.hpp"
-#include "Geode/utils/web.hpp"
 #include "NLWRating.h"
-#include "ccTypes.h"
-
-using namespace geode::prelude;
+#include <Geode/utils/web.hpp>
 
 class ListManager {
-	static std::vector<NLWRating> ratings;
-	static void parseResponse(matjson::Value data);
-  static EventListener<web::WebTask> fetchListListener;
+    static std::vector<NLWRating> ratings;
+    static void parseResponse(const matjson::Value& data);
+    static geode::async::TaskHolder<geode::utils::web::WebResponse> fetchListListener;
+public:
+    static bool fetchedRatings;
+    static bool erroredRatings;
 
-	public:
-		static bool fetchedRatings;
-		static bool erroredRatings;
-		static void init();
-		static void throwError(std::string message);
-		static std::optional<NLWRating> getRating(GJGameLevel*);
-		static cocos2d::ccColor3B getTierColor(std::string tier);
-		static cocos2d::ccColor3B getEnjoymentColor(float enjoyment);
-		static std::string getRatingLink(NLWRating rating);
-		static GJSearchObject* getSearchObject(std::string tier);
+    static void init();
+    static void throwError(std::string_view message);
+    static NLWRating* getRating(GJGameLevel* level);
+    static cocos2d::ccColor3B getTierColor(std::string_view tier);
+    static cocos2d::ccColor3B getEnjoymentColor(float enjoyment);
+    static std::string getRatingLink(const NLWRating& rating);
+    static GJSearchObject* getSearchObject(std::string_view tier);
 };
-
-#endif // LISTMANAGER_H

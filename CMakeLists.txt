@@ -8,14 +8,12 @@ else()
     set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
 endif()
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(GEODE_DISABLE_PRECOMPILED_HEADERS ON)
 
 project(NLWIntegration VERSION 1.0.0)
 
-file(GLOB SOURCES
-	src/*.cpp src/*.h
-)
+file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
 
-# Set up the mod binary
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 
 if (NOT DEFINED ENV{GEODE_SDK})
@@ -26,4 +24,4 @@ endif()
 
 add_subdirectory($ENV{GEODE_SDK} ${CMAKE_CURRENT_BINARY_DIR}/geode)
 
-setup_geode_mod(${PROJECT_NAME} EXTERNALS geode.node-ids:1.17.0-alpha.2)
+setup_geode_mod(${PROJECT_NAME})

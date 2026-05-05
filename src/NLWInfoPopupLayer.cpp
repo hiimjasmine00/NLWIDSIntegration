@@ -1,150 +1,114 @@
 #include "NLWInfoPopupLayer.h"
-#include <Geode/Geode.hpp>
-#include "Geode/binding/GJGameLevel.hpp"
-#include "Geode/cocos/cocoa/CCObject.h"
-#include "Geode/cocos/menu_nodes/CCMenu.h"
-#include "Geode/loader/Log.hpp"
-#include "Geode/cocos/cocoa/CCGeometry.h"
-#include "Geode/cocos/label_nodes/CCLabelBMFont.h"
-#include "Geode/utils/web.hpp"
 #include "ListManager.h"
-#include "NLWRating.h"
 #include "PlainTextArea.hpp"
-#include "ccTypes.h"
-#include <fmt/format.h>
+#include <Geode/binding/ButtonSprite.hpp>
+#include <Geode/binding/LevelBrowserLayer.hpp>
+#include <Geode/loader/Mod.hpp>
 
 using namespace geode::prelude;
 
-bool NLWInfoPopupLayer::setup(GJGameLevel* level, NLWRating* rating) {
-	this->m_level  = level;
-	this->m_rating = rating;
+bool NLWInfoPopupLayer::init(GJGameLevel* level, NLWRating* rating) {
+    if (!Popup::init({ 420.0f, 190.0f })) return false;
 
-	// if you find out why this works PLEASE let me know
-	// this is just hardcoded for now and happened bc of initAnchored
-	auto offset = -ccp(75.f, 65.f);
+    m_level = level;
+    m_rating = rating;
 
-	auto name = CCLabelBMFont::create(rating->name.c_str(), "bigFont.fnt");
-	name->setPosition(ccp(90, 230) + offset);
-	name->setScale(0.75);
-	name->setAnchorPoint({ 0.f, 0.5f });
-	name->setAlignment(CCTextAlignment::kCCTextAlignmentLeft);
-	name->limitLabelWidth(170.f, 0.75f, 0.1f);
-	m_mainLayer->addChild(name);
+    auto name = CCLabelBMFont::create(rating->name.c_str(), "bigFont.fnt");
+    name->setPosition({ 15.0f, 165.0f });
+    name->setScale(0.75f);
+    name->setAnchorPoint({ 0.0f, 0.5f });
+    name->setAlignment(CCTextAlignment::kCCTextAlignmentLeft);
+    name->limitLabelWidth(170.0f, 0.75f, 0.1f);
+    m_mainLayer->addChild(name);
 
-	auto creator = CCLabelBMFont::create(("by " + rating->creator).c_str(), "bigFont.fnt");
-	creator->setPosition(ccp(90, 204) + offset);
-	creator->setScale(0.75);
-	creator->setAnchorPoint({ 0.f, 0.5f });
-	creator->setAlignment(CCTextAlignment::kCCTextAlignmentLeft);
-	creator->limitLabelWidth(195.f, 0.75f, 0.1f);
-	m_mainLayer->addChild(creator);
+    auto creator = CCLabelBMFont::create(fmt::format("by {}", rating->creator).c_str(), "bigFont.fnt");
+    creator->setPosition({ 15.0f, 139.0f });
+    creator->setScale(0.75f);
+    creator->setAnchorPoint({ 0.0f, 0.5f });
+    creator->setAlignment(CCTextAlignment::kCCTextAlignmentLeft);
+    creator->limitLabelWidth(195.0f, 0.75f, 0.1f);
+    m_mainLayer->addChild(creator);
 
-	auto tierMenu = CCMenu::create();
-	tierMenu->setPosition(ccp(385, 230) + offset);
-	m_mainLayer->addChild(tierMenu);
+    auto tierMenu = CCMenu::create();
+    tierMenu->setPosition({ 310.0f, 165.0f });
+    m_mainLayer->addChild(tierMenu);
 
-	auto tier = CCLabelBMFont::create(
-		(rating->type == NLWRatingType::Pending
-			? rating->tier
-			: (rating->tier + " Tier")).c_str(),
-		"bigFont.fnt"
-	);
-	tier->setScale(0.75);
-	tier->setColor(ListManager::getTierColor(rating->tier));
-	tier->limitLabelWidth(180.f, 0.75f, 0.1f);
-	auto tierMenuItem = CCMenuItemSpriteExtra::create(
-		tier, this, menu_selector(NLWInfoPopupLayer::openTierLevels)
-	);
-	tierMenu->addChild(tierMenuItem);
+    auto tier = CCLabelBMFont::create(
+        (rating->type == NLWRatingType::Pending ? rating->tier : fmt::format("{} Tier", rating->tier)).c_str(), "bigFont.fnt"
+    );
+    tier->setScale(0.75f);
+    tier->setColor(ListManager::getTierColor(rating->tier));
+    tier->limitLabelWidth(180.0f, 0.75f, 0.1f);
+    auto tierMenuItem = CCMenuItemSpriteExtra::create(tier, this, menu_selector(NLWInfoPopupLayer::openTierLevels));
+    tierMenu->addChild(tierMenuItem);
 
-	auto skillset = CCLabelBMFont::create(rating->skillset.c_str(), "bigFont.fnt");
-	skillset->setPosition(ccp(385, 204) + offset);
-	skillset->setScale(0.5);
-	skillset->limitLabelWidth(180.f, 0.5f, 0.1f);
-	m_mainLayer->addChild(skillset);
+    auto skillset = CCLabelBMFont::create(rating->skillset.c_str(), "bigFont.fnt");
+    skillset->setPosition({ 310.0f, 139.0f });
+    skillset->setScale(0.5f);
+    skillset->limitLabelWidth(180.0f, 0.5f, 0.1f);
+    m_mainLayer->addChild(skillset);
 
-	CCSize const descSize {
-		m_size.width  - 40.f,
-		70.f
-	};
-	CCPoint const descPos {
-		m_size.width  / 2.f,
-		m_size.height / 2.f - 15.f
-	};
+    auto description = PlainTextArea::create(rating->description, { m_size.width - 40.0f, 70.0f });
+    description->setPosition(m_size / 2.0f - CCPoint { 0.0f, 15.0f });
+    description->setTouchEnabled(true);
+    m_mainLayer->addChild(description);
 
-	auto description = PlainTextArea::create(rating->description, descSize);
-	description->setPosition(descPos);
-	description->setTouchEnabled(true);
-	m_mainLayer->addChild(description);
+    auto openBtnSpr = ButtonSprite::create("Sheet", "goldFont.fnt", "GJ_button_01.png", 0.8f);
+    openBtnSpr->setScale(0.8f);
 
-	auto openBtnSpr = ButtonSprite::create("Sheet", "goldFont.fnt", "GJ_button_01.png", .8f);
-	openBtnSpr->setScale(.8f);
+    auto openBtn = CCMenuItemSpriteExtra::create(openBtnSpr, this, menu_selector(NLWInfoPopupLayer::onOpen));
+    openBtn->setPosition(m_size.width / 2.0f, 25.0f);
+    m_buttonMenu->addChild(openBtn);
 
-	auto openBtn = CCMenuItemSpriteExtra::create(
-		openBtnSpr, this, menu_selector(NLWInfoPopupLayer::onOpen)
-	);
-	openBtn->setPosition(m_size.width / 2.f, 25.f);
-	m_buttonMenu->addChild(openBtn);
+    auto enjSprite = CCSprite::createWithSpriteFrameName("NLW_button_white.png"_spr);
+    enjSprite->setColor(ListManager::getEnjoymentColor(rating->enjoyment));
+    enjSprite->setPosition(name->getPosition() + CCPoint { 10.0f, 0.0f });
+    enjSprite->setScale(0.5f);
+    m_mainLayer->addChild(enjSprite);
 
-	auto const enjPos = ccp(name->getPositionX() + 10, name->getPositionY());
+    auto enj = CCLabelBMFont::create(fmt::format("{:.0f}", rating->enjoyment).c_str(), "bigFont.fnt");
+    enj->setPosition(enjSprite->getPosition());
+    enj->setScale(0.415f);
+    m_mainLayer->addChild(enj);
 
-	auto enjSprite = CCSprite::createWithSpriteFrameName("NLW_button_white.png"_spr);
-	enjSprite->setColor(ListManager::getEnjoymentColor(rating->enjoyment));
-	enjSprite->setPosition(enjPos);
-	enjSprite->setScale(0.5);
-	m_mainLayer->addChild(enjSprite);
+    if (rating->enjoyment == -1.0f) {
+        enjSprite->setVisible(false);
+        enj->setVisible(false);
+    }
+    else name->setPosition(name->getPosition() + CCPoint { 25.0f, 0.0f });
 
-	auto enj = CCLabelBMFont::create(fmt::format("{:.0f}", rating->enjoyment).c_str(), "bigFont.fnt");
-	enj->setPosition(enjPos);
-	enj->setScale(0.415);
-	m_mainLayer->addChild(enj);
+    auto broken = CCLabelBMFont::create(fmt::format("Broken in 2.2: {}", rating->broken.value_or("unknown")).c_str(), "goldFont.fnt");
+    broken->setPosition({ 15.0f, 25.0f });
+    broken->setAnchorPoint({ 0.0f, 0.5f });
+    broken->setAlignment(CCTextAlignment::kCCTextAlignmentLeft);
+    broken->limitLabelWidth(150.0f, 0.5f, 0.1f);
+    m_mainLayer->addChild(broken);
 
-	if (rating->enjoyment == -1.f) {
-		enjSprite->setVisible(false);
-		enj->setVisible(false);
-	} else {
-		name->setPosition(name->getPosition() + ccp(25, 0));
-	}
-
-	std::string brokenStr = rating->broken.value_or("unknown");
-	auto broken = CCLabelBMFont::create(
-		fmt::format("Broken in 2.2: {}", brokenStr).c_str(),
-		"goldFont.fnt"
-	);
-	broken->setPosition(90 + offset.x, 90 + offset.y);
-	broken->setAnchorPoint({ 0.f, 0.5f });
-	broken->setAlignment(CCTextAlignment::kCCTextAlignmentLeft);
-	broken->limitLabelWidth(150.f, 0.5f, 0.1f);
-	m_mainLayer->addChild(broken);
-
-	return true;
+    return true;
 }
 
 void NLWInfoPopupLayer::onOpen(CCObject* sender) {
-	if (!this->m_rating) {
-		log::error("rating is nullptr??");
-		return;
-	}
-	web::openLinkInBrowser(ListManager::getRatingLink(*this->m_rating));
+    if (!m_rating) {
+        log::error("rating is nullptr??");
+        return;
+    }
+    web::openLinkInBrowser(ListManager::getRatingLink(*m_rating));
 }
 
 void NLWInfoPopupLayer::openTierLevels(CCObject* sender) {
-	if (!this->m_rating) {
-		log::error("rating is nullptr??");
-		return;
-	}
-	auto browserLayer = LevelBrowserLayer::create(
-		ListManager::getSearchObject(this->m_rating->tier)
-	);
-	geode::cocos::switchToScene(browserLayer);
+    if (!m_rating) {
+        log::error("rating is nullptr??");
+        return;
+    }
+    CCDirector::get()->replaceScene(CCTransitionFade::create(0.5f, LevelBrowserLayer::scene(ListManager::getSearchObject(m_rating->tier))));
 }
 
 NLWInfoPopupLayer* NLWInfoPopupLayer::create(GJGameLevel* level, NLWRating* rating) {
-	auto ret = new NLWInfoPopupLayer();
-	if (ret && ret->initAnchored(420.f, 190.f, level, rating)) {
-		ret->autorelease();
-		return ret;
-	}
-	CC_SAFE_DELETE(ret);
-	return nullptr;
+    auto ret = new NLWInfoPopupLayer();
+    if (ret->init(level, rating)) {
+        ret->autorelease();
+        return ret;
+    }
+    delete ret;
+    return nullptr;
 }

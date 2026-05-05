@@ -1,37 +1,32 @@
 {
-	"geode": "4.4.0",
-	"gd": {
-		"win": "2.2074",
-		"mac": "2.2074",
-		"android": "2.2074",
-		"ios": "2.2074"
-	},
-	"version": "v1.4.0-beta.6",
-	"id": "oatmealine.nlw_integration",
-	"name": "NLW Integration",
-	"dependencies": [
-		{
-			"id": "geode.node-ids",
-			"version": ">=v1.17.0-alpha.2",
-			"importance": "required"
-		}
-	],
-	"developer": "oatmealine",
-	"description": "Integrates the Non-Listworthy Extreme Demon spreadsheet into level pages",
-	"repository": "https://github.com/oatmealine/nlw-integration",
-	"resources": {
-		"spritesheets": {
-			"NLW_icons": [
-				"resources/*.png"
-			]
-		}
-	},
-	"settings": {
-		"use-demon-face": {
-			"name": "Use Demon Face",
-			"description": "Disables the tier text and lets you access the menu by clicking on the demon icon",
-			"type": "bool",
-			"default": false
-		}
-	}
+    "geode": "5.7.1",
+    "gd": {
+        "win": "2.2081",
+        "mac": "2.2081",
+        "android": "2.2081",
+        "ios": "2.2081"
+    },
+    "version": "v1.4.0-beta.6",
+    "id": "oatmealine.nlw_integration",
+    "name": "NLW Integration",
+    "developers": ["oatmealine", "hiimjasmine00"],
+    "description": "Integrates the Non-Listworthy Extreme Demon spreadsheet into level pages",
+    "links": {
+        "source": "https://github.com/hiimjasmine00/nlw-integration"
+    },
+    "resources": {
+        "spritesheets": {
+            "NLW_icons": [
+                "resources/*.png"
+            ]
+        }
+    },
+    "settings": {
+        "use-demon-face": {
+            "name": "Use Demon Face",
+            "description": "Disables the tier text and lets you access the menu by clicking on the demon icon",
+            "type": "bool",
+            "default": false
+        }
+    }
 }

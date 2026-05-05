@@ -1,21 +1,14 @@
-#ifndef NLWINFOLAYER_H
-#define NLWINFOLAYER_H
-
-#include "Geode/binding/GJGameLevel.hpp"
-#include "Geode/ui/Popup.hpp"
 #include "NLWRating.h"
+#include <Geode/ui/Popup.hpp>
 
-class NLWInfoPopupLayer : public geode::Popup<GJGameLevel*, NLWRating*> {
-	protected:
-		GJGameLevel* m_level;
-		NLWRating* m_rating;
+class NLWInfoPopupLayer : public geode::Popup {
+protected:
+    GJGameLevel* m_level;
+    NLWRating* m_rating;
 
-		bool setup(GJGameLevel* level, NLWRating* rating);
-		void onOpen(CCObject* sender);
-		void openTierLevels(CCObject* sender);
-
-	public:
-		static NLWInfoPopupLayer* create(GJGameLevel* level, NLWRating* rating);
+    bool init(GJGameLevel* level, NLWRating* rating);
+    void onOpen(cocos2d::CCObject* sender);
+    void openTierLevels(cocos2d::CCObject* sender);
+public:
+    static NLWInfoPopupLayer* create(GJGameLevel* level, NLWRating* rating);
 };
-
-#endif // NLWINFOLAYER_H
