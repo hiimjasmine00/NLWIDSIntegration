@@ -1,16 +1,15 @@
 #include "NLWInfoPopupLayer.hpp"
 #include "ListManager.hpp"
-#include "PlainTextArea.hpp"
 #include <Geode/binding/ButtonSprite.hpp>
 #include <Geode/binding/LevelBrowserLayer.hpp>
 #include <Geode/loader/Mod.hpp>
+#include <Geode/ui/TextArea.hpp>
 
 using namespace geode::prelude;
 
-bool NLWInfoPopupLayer::init(GJGameLevel* level, NLWRating* rating) {
+bool NLWInfoPopupLayer::init(NLWRating* rating) {
     if (!Popup::init({ 420.0f, 190.0f })) return false;
 
-    m_level = level;
     m_rating = rating;
 
     auto name = CCLabelBMFont::create(rating->name.c_str(), "bigFont.fnt");
@@ -48,28 +47,34 @@ bool NLWInfoPopupLayer::init(GJGameLevel* level, NLWRating* rating) {
     skillset->limitLabelWidth(180.0f, 0.5f, 0.1f);
     m_mainLayer->addChild(skillset);
 
-    auto description = PlainTextArea::create(rating->description, { m_size.width - 40.0f, 70.0f });
-    description->setPosition(m_size / 2.0f - CCPoint { 0.0f, 15.0f });
-    description->setTouchEnabled(true);
+    auto background = CCScale9Sprite::create("square02b_001.png", { 0.0f, 0.0f, 80.0f, 80.0f });
+    background->setPosition({ 210.0f, 80.0f });
+    background->setContentSize({ 400.0f, 70.0f });
+    background->setColor({ 0, 0, 0 });
+    background->setOpacity(75);
+    m_mainLayer->addChild(background);
+
+    auto description = SimpleTextArea::create(rating->description, "chatFont.fnt", 1.0f, 380.0f);
+    description->setPosition({ 210.0f, 80.0f });
     m_mainLayer->addChild(description);
 
     auto openBtnSpr = ButtonSprite::create("Sheet", "goldFont.fnt", "GJ_button_01.png", 0.8f);
     openBtnSpr->setScale(0.8f);
 
     auto openBtn = CCMenuItemSpriteExtra::create(openBtnSpr, this, menu_selector(NLWInfoPopupLayer::onOpen));
-    openBtn->setPosition(m_size.width / 2.0f, 25.0f);
+    openBtn->setPosition({ 210.0f, 25.0f });
     m_buttonMenu->addChild(openBtn);
 
-    auto enjSprite = CCSprite::createWithSpriteFrameName("NLW_button_white.png"_spr);
+    auto enjSprite = CCSprite::create("NLW_button_white.png"_spr);
     enjSprite->setColor(ListManager::getEnjoymentColor(rating->enjoyment));
     enjSprite->setPosition(name->getPosition() + CCPoint { 10.0f, 0.0f });
     enjSprite->setScale(0.5f);
     m_mainLayer->addChild(enjSprite);
 
     auto enj = CCLabelBMFont::create(fmt::format("{:.0f}", rating->enjoyment).c_str(), "bigFont.fnt");
-    enj->setPosition(enjSprite->getPosition());
-    enj->setScale(0.415f);
-    m_mainLayer->addChild(enj);
+    enj->setPosition(enjSprite->getContentSize() / 2.0f);
+    enj->setScale(0.83f);
+    enjSprite->addChild(enj);
 
     if (rating->enjoyment == -1.0f) {
         enjSprite->setVisible(false);
@@ -88,24 +93,17 @@ bool NLWInfoPopupLayer::init(GJGameLevel* level, NLWRating* rating) {
 }
 
 void NLWInfoPopupLayer::onOpen(CCObject* sender) {
-    if (!m_rating) {
-        log::error("rating is nullptr??");
-        return;
-    }
-    web::openLinkInBrowser(ListManager::getRatingLink(*m_rating));
+    if (m_rating) web::openLinkInBrowser(ListManager::getRatingLink(m_rating));
 }
 
 void NLWInfoPopupLayer::openTierLevels(CCObject* sender) {
-    if (!m_rating) {
-        log::error("rating is nullptr??");
-        return;
-    }
-    CCDirector::get()->replaceScene(CCTransitionFade::create(0.5f, LevelBrowserLayer::scene(ListManager::getSearchObject(m_rating->tier))));
+    if (m_rating) CCDirector::get()->replaceScene(
+        CCTransitionFade::create(0.5f, LevelBrowserLayer::scene(ListManager::getSearchObject(m_rating->tier))));
 }
 
-NLWInfoPopupLayer* NLWInfoPopupLayer::create(GJGameLevel* level, NLWRating* rating) {
+NLWInfoPopupLayer* NLWInfoPopupLayer::create(NLWRating* rating) {
     auto ret = new NLWInfoPopupLayer();
-    if (ret->init(level, rating)) {
+    if (ret->init(rating)) {
         ret->autorelease();
         return ret;
     }

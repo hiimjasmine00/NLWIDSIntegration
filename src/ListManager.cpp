@@ -6,80 +6,65 @@
 
 using namespace geode::prelude;
 
-bool ListManager::fetchedRatings;
-bool ListManager::erroredRatings;
+bool ListManager::fetchedRatings = false;
+bool ListManager::erroredRatings = false;
 std::vector<NLWRating> ListManager::ratings;
-TaskHolder<web::WebResponse> ListManager::fetchListListener;
-
-void ListManager::parseResponse(const matjson::Value& data) {
-    if (!data.isArray()) {
-        log::error("got unexpected data: {}", data.dump());
-        ListManager::throwError("expected root element to be an array! check logs");
-        return;
-    }
-
-    auto arr = data.asArray().unwrap();
-
-    for (auto& level : arr) {
-        ListManager::ratings.emplace_back(level);
-    }
-}
-
-std::string getPlatformName() {
-    #ifdef GEODE_IS_WINDOWS
-    if (HMODULE hntdll = GetModuleHandle("ntdll.dll")) {
-        using WineVersionFunc = char const* (CDECL *)(void);
-        static WineVersionFunc getWineVersion = reinterpret_cast<WineVersionFunc>(GetProcAddress(hntdll, "wine_get_version"));
-        if (getWineVersion) return fmt::format(GEODE_PLATFORM_NAME " (Wine/{})", getWineVersion());
-    }
-    #endif
-    return GEODE_PLATFORM_NAME;
-}
-
-std::string getUserAgent() {
-    return fmt::format(GEODE_MOD_ID "/{}; GeometryDash/" GEODE_STR(GEODE_GD_VERSION) " (GeodeSDK/{}); {}",
-        Mod::get()->getVersion().toNonVString(true),
-        Loader::get()->getVersion().toNonVString(true),
-        getPlatformName()
-    );
-}
 
 void ListManager::init() {
-    if (!ListManager::fetchedRatings) {
-        web::WebRequest req = web::WebRequest();
+    if (fetchedRatings) return;
 
-        ListManager::fetchListListener.spawn(
-            web::WebRequest().userAgent(getUserAgent()).get("https://nlw.oat.zone/list?type=all"),
-            [](web::WebResponse res) {
-                auto json = res.json();
-                if (res.ok() && json.isOk()) {
-                    ListManager::fetchedRatings = true;
-                    ListManager::erroredRatings = false;
-                    ListManager::parseResponse(json.unwrap());
-                    log::info("successfully fetched {} levels", ListManager::ratings.size());
-                }
-                else ListManager::throwError(fmt::format("{}: {}", res.code(), res.string().unwrapOr("No data returned")));
+    spawn(
+        web::WebRequest().get("https://nlw.oat.zone/list?type=all"),
+        [](web::WebResponse res) {
+            ratings.clear();
+
+            fetchedRatings = true;
+
+            if (!res.ok()) {
+                erroredRatings = true;
+                return log::error("Failed to fetch NLW ratings: {}", res.string().unwrapOrDefault());
             }
-        );
-    }
-}
 
-void ListManager::throwError(std::string_view message) {
-    ListManager::fetchedRatings = true;
-    ListManager::erroredRatings = true;
-    FLAlertLayer::create("Error", fmt::format(
-        "{}\n\n"
-        "<cr>Could not fetch NLW data.</c>\n"
-        "The API could be down, or this is could be a temporary network failure. Restart your game to try again!",
-        message
-    ), "OK")->show();
-    log::error("error fetching ratings: {}", message);
+            auto json = res.json();
+            if (json.isErr()) {
+                erroredRatings = true;
+                return log::error("Failed to parse NLW ratings JSON: {}", json.unwrapErr());
+            }
+
+            auto data = std::move(json).unwrap().asArray();
+            if (!data.isOk()) {
+                erroredRatings = true;
+                return log::error("NLW ratings JSON is not an array");
+            }
+
+            for (auto& level : data.unwrap()) {
+                auto& entry = ratings.emplace_back();
+                entry.sheetIndex = level["sheetIndex"].asInt().unwrapOrDefault();
+                auto type = level["type"].asString().unwrapOrDefault();
+                if (type == "platformer") entry.type = NLWRatingType::Platformer;
+                else if (type == "pending") entry.type = NLWRatingType::Pending;
+                else entry.type = NLWRatingType::Regular;
+                entry.tier = level["tier"].asString().unwrapOrDefault();
+                entry.id = level["id"].asInt().unwrapOr(-1);
+                entry.name = level["name"].asString().unwrapOr("?");
+                entry.creator = level["creator"].asString().unwrapOr("?");
+                entry.skillset = level["skillset"].asString().unwrapOrDefault();
+                entry.enjoyment = level["enjoyment"].asDouble().unwrapOr(-1.0f);
+                entry.description = level["description"].asString().unwrapOrDefault();
+                if (level["broken"].isString()) {
+                    entry.broken = level["broken"].asString().unwrap();
+                }
+            }
+
+            log::info("Successfully fetched {} NLW ratings", ratings.size());
+        }
+    );
 }
 
 NLWRating* ListManager::getRating(GJGameLevel* level) {
     auto id = level->m_levelID.value();
 
-    for (auto& rating : ListManager::ratings) {
+    for (auto& rating : ratings) {
         if (id == rating.id) return &rating;
     }
 
@@ -123,21 +108,23 @@ ccColor3B ListManager::getEnjoymentColor(float enjoyment) {
     return { 255, 255, 255 };
 }
 
-std::string ListManager::getRatingLink(const NLWRating& rating) {
+std::string ListManager::getRatingLink(NLWRating* rating) {
     auto sheetID = 0;
-    if (rating.type == NLWRatingType::Platformer) sheetID = 339121001;
-    if (rating.type == NLWRatingType::Pending) sheetID = 1134134033;
+    if (rating->type == NLWRatingType::Platformer) sheetID = 339121001;
+    if (rating->type == NLWRatingType::Pending) sheetID = 1134134033;
 
-    auto rowID = rating.sheetIndex + 1;
+    auto rowID = rating->sheetIndex + 1;
 
     return fmt::format(
-        "https://docs.google.com/spreadsheets/d/1YxUE2kkvhT2E6AjnkvTf-o8iu_shSLbuFkEFcZOvieA/edit#gid={}&range={}:{}", sheetID, rowID, rowID);
+        "https://docs.google.com/spreadsheets/d/1YxUE2kkvhT2E6AjnkvTf-o8iu_shSLbuFkEFcZOvieA/edit#gid={}&range={}:{}",
+        sheetID, rowID, rowID
+    );
 }
 
 GJSearchObject* ListManager::getSearchObject(std::string_view tier) {
     StringBuffer download;
     auto first = true;
-    for (auto rating : ListManager::ratings) {
+    for (auto& rating : ratings) {
         if (rating.tier != tier) continue;
 
         if (!first) download.append(',');
@@ -145,6 +132,5 @@ GJSearchObject* ListManager::getSearchObject(std::string_view tier) {
         first = false;
     }
 
-    download.append("&gameVersion=22");
     return GJSearchObject::create(SearchType::Type19, download.str());
 }
