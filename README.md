@@ -1,5 +1,5 @@
 # NLW and IDS Integration
-[Non-Listworthy Extreme Demons](https://docs.google.com/spreadsheets/d/1YxUE2kkvhT2E6AjnkvTf-o8iu_shSLbuFkEFcZOvieA/edit) and [Insane Demons](https://docs.google.com/spreadsheets/d/15ehtAIpCR8s04qIb8zij9sTpUdGJbmAE_LDcfVA3tcU/edit) Spreadsheet integration.
+[Non-Listworthy Extreme Demons](https://docs.google.com/spreadsheets/d/1YxUE2kkvhT2E6AjnkvTf-o8iu_shSLbuFkEFcZOvieA/edit) and [Insane Demon Spreadsheet](https://docs.google.com/spreadsheets/d/15ehtAIpCR8s04qIb8zij9sTpUdGJbmAE_LDcfVA3tcU/edit) integration.
 
 ## Features
 - Clickable text above difficulty icons in the level info menu for all non-listworthy extreme demons and insane demons

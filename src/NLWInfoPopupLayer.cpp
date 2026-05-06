@@ -83,7 +83,7 @@ bool NLWInfoPopupLayer::init(NLWRating* rating) {
     }
     else name->setPosition(name->getPosition() + CCPoint { 25.0f, 0.0f });
 
-    auto broken = CCLabelBMFont::create(fmt::format("Broken in 2.2: {}", rating->broken.value_or("unknown")).c_str(), "goldFont.fnt");
+    auto broken = CCLabelBMFont::create(fmt::format("Broken in 2.2: {}", rating->broken).c_str(), "goldFont.fnt");
     broken->setPosition({ 15.0f, 25.0f });
     broken->setAnchorPoint({ 0.0f, 0.5f });
     broken->setAlignment(CCTextAlignment::kCCTextAlignmentLeft);

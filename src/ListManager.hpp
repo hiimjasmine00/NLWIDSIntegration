@@ -12,7 +12,7 @@ struct NLWRating {
     std::string creator = "?";
     std::string skillset;
     std::string description;
-    std::optional<std::string> broken;
+    std::string broken = "unknown";
     NLWRatingType type = NLWRatingType::Regular;
     float enjoyment = -1.0f;
     int id = -1;

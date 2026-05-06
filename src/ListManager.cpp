@@ -10,15 +10,15 @@ void loadList(std::string url, bool insane) {
     spawn(
         web::WebRequest().get(std::move(url)),
         [insane](web::WebResponse res) {
-            auto listName = insane ? "IDS" : "NLW";
+            std::string_view listName = insane ? "IDS" : "NLW";
 
             if (!res.ok()) return log::error("Failed to fetch {} ratings: {}", listName, res.string().unwrapOrDefault());
 
             auto json = res.json();
-            if (json.isErr()) return log::error("Failed to parse {} ratings JSON: {}", listName, json.unwrapErr());
+            if (json.isErr()) return log::error("Failed to parse {} ratings: {}", listName, json.unwrapErr());
 
             auto data = std::move(json).unwrap().asArray();
-            if (!data.isOk()) return log::error("{} ratings JSON is not an array", listName);
+            if (!data.isOk()) return log::error("Failed to parse {} ratings: not an array", listName);
 
             for (auto& level : data.unwrap()) {
                 auto& entry = ListManager::ratings.emplace_back();
