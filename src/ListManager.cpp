@@ -1,64 +1,71 @@
 #include "ListManager.hpp"
-#include <Geode/binding/FLAlertLayer.hpp>
 #include <Geode/binding/GJGameLevel.hpp>
-#include <Geode/binding/GJSearchObject.hpp>
-#include <Geode/loader/Mod.hpp>
+#include <Geode/loader/GameEvent.hpp>
 
 using namespace geode::prelude;
 
-bool ListManager::fetchedRatings = false;
-bool ListManager::erroredRatings = false;
 std::vector<NLWRating> ListManager::ratings;
 
-void ListManager::init() {
-    if (fetchedRatings) return;
-
+void loadList(std::string url, bool insane) {
     spawn(
-        web::WebRequest().get("https://nlw.oat.zone/list?type=all"),
-        [](web::WebResponse res) {
-            ratings.clear();
+        web::WebRequest().get(std::move(url)),
+        [insane](web::WebResponse res) {
+            auto listName = insane ? "IDS" : "NLW";
 
-            fetchedRatings = true;
-
-            if (!res.ok()) {
-                erroredRatings = true;
-                return log::error("Failed to fetch NLW ratings: {}", res.string().unwrapOrDefault());
-            }
+            if (!res.ok()) return log::error("Failed to fetch {} ratings: {}", listName, res.string().unwrapOrDefault());
 
             auto json = res.json();
-            if (json.isErr()) {
-                erroredRatings = true;
-                return log::error("Failed to parse NLW ratings JSON: {}", json.unwrapErr());
-            }
+            if (json.isErr()) return log::error("Failed to parse {} ratings JSON: {}", listName, json.unwrapErr());
 
             auto data = std::move(json).unwrap().asArray();
-            if (!data.isOk()) {
-                erroredRatings = true;
-                return log::error("NLW ratings JSON is not an array");
-            }
+            if (!data.isOk()) return log::error("{} ratings JSON is not an array", listName);
 
             for (auto& level : data.unwrap()) {
-                auto& entry = ratings.emplace_back();
-                entry.sheetIndex = level["sheetIndex"].asInt().unwrapOrDefault();
-                auto type = level["type"].asString().unwrapOrDefault();
-                if (type == "platformer") entry.type = NLWRatingType::Platformer;
-                else if (type == "pending") entry.type = NLWRatingType::Pending;
-                else entry.type = NLWRatingType::Regular;
-                entry.tier = level["tier"].asString().unwrapOrDefault();
-                entry.id = level["id"].asInt().unwrapOr(-1);
-                entry.name = level["name"].asString().unwrapOr("?");
-                entry.creator = level["creator"].asString().unwrapOr("?");
-                entry.skillset = level["skillset"].asString().unwrapOrDefault();
-                entry.enjoyment = level["enjoyment"].asDouble().unwrapOr(-1.0f);
-                entry.description = level["description"].asString().unwrapOrDefault();
-                if (level["broken"].isString()) {
-                    entry.broken = level["broken"].asString().unwrap();
+                auto& entry = ListManager::ratings.emplace_back();
+                if (auto sheetIndex = level["sheetIndex"].asInt()) {
+                    entry.sheetIndex = sheetIndex.unwrap();
                 }
+                if (auto type = level["type"].asString()) {
+                    auto typeStr = std::move(type).unwrap();
+                    if (typeStr == "platformer") entry.type = NLWRatingType::Platformer;
+                    else if (typeStr == "pending") entry.type = NLWRatingType::Pending;
+                    else entry.type = NLWRatingType::Regular;
+                }
+                if (auto tier = level["tier"].asString()) {
+                    entry.tier = tier.unwrap();
+                }
+                if (auto id = level["id"].asInt()) {
+                    entry.id = id.unwrap();
+                }
+                if (auto name = level["name"].asString()) {
+                    entry.name = name.unwrap();
+                }
+                if (auto creator = level["creator"].asString()) {
+                    entry.creator = creator.unwrap();
+                }
+                if (auto skillset = level["skillset"].asString()) {
+                    entry.skillset = skillset.unwrap();
+                }
+                if (auto enjoyment = level["enjoyment"].asDouble()) {
+                    entry.enjoyment = enjoyment.unwrap();
+                }
+                if (auto description = level["description"].asString()) {
+                    entry.description = description.unwrap();
+                }
+                if (auto broken = level["broken"].asString()) {
+                    entry.broken = broken.unwrap();
+                }
+                entry.insane = insane;
             }
 
-            log::info("Successfully fetched {} NLW ratings", ratings.size());
+            log::info("Successfully fetched {} ratings", listName);
         }
     );
+}
+
+$on_game(Loaded) {
+    loadList("https://nlw.oat.zone/list?type=all", false);
+    loadList("https://nlw.oat.zone/ids?type=all", true);
 }
 
 NLWRating* ListManager::getRating(GJGameLevel* level) {
@@ -106,31 +113,4 @@ ccColor3B ListManager::getEnjoymentColor(float enjoyment) {
     if (enjoyment > 40.0f) return { 254, 203, 160 };
     if (enjoyment > 0.0f) return { 240, 153, 154 };
     return { 255, 255, 255 };
-}
-
-std::string ListManager::getRatingLink(NLWRating* rating) {
-    auto sheetID = 0;
-    if (rating->type == NLWRatingType::Platformer) sheetID = 339121001;
-    if (rating->type == NLWRatingType::Pending) sheetID = 1134134033;
-
-    auto rowID = rating->sheetIndex + 1;
-
-    return fmt::format(
-        "https://docs.google.com/spreadsheets/d/1YxUE2kkvhT2E6AjnkvTf-o8iu_shSLbuFkEFcZOvieA/edit#gid={}&range={}:{}",
-        sheetID, rowID, rowID
-    );
-}
-
-GJSearchObject* ListManager::getSearchObject(std::string_view tier) {
-    StringBuffer download;
-    auto first = true;
-    for (auto& rating : ratings) {
-        if (rating.tier != tier) continue;
-
-        if (!first) download.append(',');
-        download.append("{}", rating.id);
-        first = false;
-    }
-
-    return GJSearchObject::create(SearchType::Type19, download.str());
 }

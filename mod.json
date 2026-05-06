@@ -6,17 +6,24 @@
         "android": "2.2081",
         "ios": "2.2081"
     },
-    "version": "v1.4.0-beta.6",
-    "id": "oatmealine.nlw_integration",
-    "name": "NLW Integration",
-    "developers": ["oatmealine", "hiimjasmine00"],
-    "description": "Integrates the Non-Listworthy Extreme Demon spreadsheet into level pages",
+    "version": "v1.4.0",
+    "id": "hiimjasmine00.nlw_ids_integration",
+    "name": "NLW and IDS Integration",
+    "developers": ["hiimjasmine00", "oatmealine"],
+    "description": "Non-Listworthy Extreme Demons and Insane Demon Spreadsheet integration.",
     "links": {
-        "source": "https://github.com/hiimjasmine00/nlw-integration"
+        "source": "https://github.com/hiimjasmine00/nlw-ids-integration"
     },
     "resources": {
         "sprites": [
             "resources/*.png"
         ]
-    }
+    },
+    "tags": [
+        "content",
+        "enhancement",
+        "interface",
+        "online",
+        "utility"
+    ]
 }

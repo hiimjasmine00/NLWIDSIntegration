@@ -1,9 +1,14 @@
-> [!NOTE]
-> This mod will not be updated to 2.208. I give full permission for any future forks to be uploaded to the Geode mod index.
-> 
-> I will still try to maintain nlw-api to the best of my ability.
+# NLW and IDS Integration
+[Non-Listworthy Extreme Demons](https://docs.google.com/spreadsheets/d/1YxUE2kkvhT2E6AjnkvTf-o8iu_shSLbuFkEFcZOvieA/edit) and [Insane Demons](https://docs.google.com/spreadsheets/d/15ehtAIpCR8s04qIb8zij9sTpUdGJbmAE_LDcfVA3tcU/edit) Spreadsheet integration.
 
-# NLWIntegration
+## Features
+- Clickable text above difficulty icons in the level info menu for all non-listworthy extreme demons and insane demons
+- Shows the tier, enjoyment, description, and compatibility for each level
+- Clicking on the tier will show you all levels in that tier
 
-Uses the [Non-Listworthy Extreme Demons spreadsheet](https://docs.google.com/spreadsheets/d/1YxUE2kkvhT2E6AjnkvTf-o8iu_shSLbuFkEFcZOvieA/edit#gid=190861115)
-with [nlw-api](https://nlw.oat.zone/) to query tiers, skillsets, enjoyments and descriptions for all extreme demons.
+## Credits
+- [oatmealine](https://gdbrowser.com/u/8369) - Original creator of NLW Integration and IDS Integration
+- [hiimjasmine00](https://gdbrowser.com/u/7466002) - Creator of the mod
+
+## License
+This mod is licensed under the [MIT License](./LICENSE).

@@ -26,10 +26,7 @@ class $modify(NLWInfoLayer, LevelInfoLayer) {
     }
 
     void updateDifficultyFace() {
-        if (
-            !ListManager::fetchedRatings || ListManager::erroredRatings ||
-            m_level->m_stars != 10 || m_level->m_demonDifficulty != 6 || !m_fields->m_menu
-        ) return;
+        if (!m_fields->m_menu) return;
 
         auto rating = ListManager::getRating(m_level);
         if (!rating) return;

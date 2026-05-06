@@ -1,6 +1,7 @@
 #include "NLWInfoPopupLayer.hpp"
 #include "ListManager.hpp"
 #include <Geode/binding/ButtonSprite.hpp>
+#include <Geode/binding/GJSearchObject.hpp>
 #include <Geode/binding/LevelBrowserLayer.hpp>
 #include <Geode/loader/Mod.hpp>
 #include <Geode/ui/TextArea.hpp>
@@ -93,12 +94,48 @@ bool NLWInfoPopupLayer::init(NLWRating* rating) {
 }
 
 void NLWInfoPopupLayer::onOpen(CCObject* sender) {
-    if (m_rating) web::openLinkInBrowser(ListManager::getRatingLink(m_rating));
+    if (!m_rating) return;
+
+    auto insane = m_rating->insane;
+
+    int sheetID;
+    switch (m_rating->type) {
+        case NLWRatingType::Platformer:
+            sheetID = insane ? 506524049 : 339121001;
+            break;
+        case NLWRatingType::Pending:
+            sheetID = 1134134033;
+            break;
+        default:
+            sheetID = insane ? 1309758655 : 0;
+            break;
+    }
+
+    auto rowID = m_rating->sheetIndex + 1;
+    web::openLinkInBrowser(fmt::format(
+        "https://docs.google.com/spreadsheets/d/{}/edit#gid={}&range={}:{}",
+        insane ? "15ehtAIpCR8s04qIb8zij9sTpUdGJbmAE_LDcfVA3tcU" : "1YxUE2kkvhT2E6AjnkvTf-o8iu_shSLbuFkEFcZOvieA",
+        sheetID, rowID, rowID
+    ));
 }
 
 void NLWInfoPopupLayer::openTierLevels(CCObject* sender) {
-    if (m_rating) CCDirector::get()->replaceScene(
-        CCTransitionFade::create(0.5f, LevelBrowserLayer::scene(ListManager::getSearchObject(m_rating->tier))));
+    if (!m_rating) return;
+
+    StringBuffer download;
+    auto first = true;
+    auto& tier = m_rating->tier;
+    auto insane = m_rating->insane;
+    for (auto& rating : ListManager::ratings) {
+        if (rating.tier != tier || rating.insane != insane) continue;
+
+        if (!first) download.append(',');
+        download.append("{}", rating.id);
+        first = false;
+    }
+
+    CCDirector::get()->replaceScene(CCTransitionFade::create(0.5f,
+        LevelBrowserLayer::scene(GJSearchObject::create(SearchType::Type19, download.str()))));
 }
 
 NLWInfoPopupLayer* NLWInfoPopupLayer::create(NLWRating* rating) {
