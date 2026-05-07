@@ -13,10 +13,16 @@ jobs:
       matrix:
         config:
         - name: Windows
-          os: windows-latest
+          os: ubuntu-latest
+          target: Win64
+          build-config: RelWithDebInfo
 
         - name: macOS
           os: macos-latest
+
+        - name: iOS
+          os: macos-latest
+          target: iOS
 
         - name: Android32
           os: ubuntu-latest
@@ -26,24 +32,19 @@ jobs:
           os: ubuntu-latest
           target: Android64
 
-        - name: iOS
-          os: macos-latest
-          target: iOS
-
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Build the mod
-        uses: geode-sdk/build-geode-mod@main
+        uses: hiimjasmine00/build-geode-mod@xwin
         with:
-          bindings: geode-sdk/bindings
-          bindings-ref: main
+          build-config: ${{ matrix.config.build-config || 'Release' }}
+          export-pdb: true
+          export-symbols: true
           combine: true
-          sdk: 'nightly'
-          cli: 'nightly'
           target: ${{ matrix.config.target }}
 
   package:
@@ -55,7 +56,7 @@ jobs:
       - uses: geode-sdk/build-geode-mod/combine@main
         id: build
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: Build Output
           path: ${{ steps.build.outputs.build-output }}
