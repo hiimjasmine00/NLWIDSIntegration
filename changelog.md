@@ -4,6 +4,6 @@
 - Merged NLW Integration with IDS Integration to add rating info for Insane Demons alongside non-listworthy Extreme Demons
 - Removed the option to click the demon face to reduce incompatibility with other mods
 
-## Previous versions
+## v1.4.0-beta.6 (2025-05-09)
 - [NLW Integration changelog](https://github.com/oatmealine/nlw-integration/blob/main/changelog.md)
 - [IDS Integration changelog](https://github.com/oatmealine/nlw-integration/blob/ids-integration/changelog.md)

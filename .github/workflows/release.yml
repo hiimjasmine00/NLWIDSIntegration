@@ -17,7 +17,7 @@ jobs:
       - uses: hiimjasmine00/release-geode-mod@main
         id: mod-release
         with:
-          branch: master
+          branch: main
           token: ${{ secrets.GITHUB_TOKEN }}
 
   publish:
