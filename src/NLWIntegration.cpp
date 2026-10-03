@@ -69,6 +69,8 @@ ccColor3B NLWIntegration::getTierColor(std::string_view tier) {
     if (tier == "Terrifying") return { 241, 158, 234 };
     if (tier == "Catastrophic") return { 234, 102, 97 };
     if (tier == "Inexorable") return { 255, 193, 131 };
+    if (tier == "Excruciating") return { 255, 229, 153 };
+    if (tier == "Merciless") return { 167, 229, 141 };
     if (tier == "Super Fucking Terrifying") return { 0, 0, 0 };
 
     if (tier == "Low End") return { 0, 192, 237 };
